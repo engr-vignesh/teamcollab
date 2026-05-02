@@ -1,0 +1,76 @@
+<div class="card bg-base-100 shadow-sm border border-base-200 hover:shadow-md transition-all duration-200 group">
+    <div class="card-body p-4 gap-3">
+        <div class="flex justify-between items-start">
+            <span [class]="getPriorityClass(task.priority)"
+                class="badge badge-sm font-semibold uppercase tracking-wider">
+                {{ task.priority }}
+            </span>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="delete.emit(task.id)" class="btn btn-ghost btn-xs btn-circle text-error">
+                    <i-lucide name="trash-2" class="w-3.5 h-3.5"></i-lucide>
+                </button>
+            </div>
+        </div>
+
+        <h3 class="card-title text-sm font-bold leading-tight line-clamp-2">
+            {{ task.title }}
+        </h3>
+
+        <p class="text-xs opacity-60 line-clamp-2">
+            {{ task.description }}
+        </p>
+
+        <div class="flex justify-between items-center mt-1 pt-3 border-t border-base-200">
+            <div class="flex items-center gap-1.5">
+                <div class="avatar">
+                    <div class="w-6 rounded-full">
+                        <img [src]="task.assignee.avatar" [alt]="task.assignee.name" />
+                    </div>
+                </div>
+                <span class="text-xs font-medium opacity-60">{{ task.assignee.name }}</span>
+            </div>
+
+            <div class="dropdown dropdown-end dropdown-top">
+                <div tabindex="0" role="button" [class]="getStatusClass(task.status)"
+                    class="badge badge-sm font-semibold gap-1 cursor-pointer hover:opacity-80 transition-opacity">
+                    {{ task.status === 'wip' ? 'In Progress' : task.status }}
+                    <i-lucide name="chevron-right" class="w-2.5 h-2.5 opacity-70"></i-lucide>
+                </div>
+                <ul tabindex="0"
+                    class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[10] w-44 p-2 shadow-lg border border-base-200 mb-1">
+                    <li class="menu-title text-xs">Move to</li>
+                    <li>
+                        <button (click)="statusChange.emit('backlog')" class="gap-2 text-sm">
+                            <span class="w-2 h-2 rounded-full bg-base-content/30 flex-shrink-0"></span>
+                            Backlog
+                        </button>
+                    </li>
+                    <li>
+                        <button (click)="statusChange.emit('wip')" class="gap-2 text-sm">
+                            <span class="w-2 h-2 rounded-full bg-warning flex-shrink-0"></span>
+                            In Progress
+                        </button>
+                    </li>
+                    <li>
+                        <button (click)="statusChange.emit('completed')" class="gap-2 text-sm">
+                            <span class="w-2 h-2 rounded-full bg-success flex-shrink-0"></span>
+                            Completed
+                        </button>
+                    </li>
+                    <li>
+                        <button (click)="statusChange.emit('blocked')" class="gap-2 text-sm">
+                            <span class="w-2 h-2 rounded-full bg-error flex-shrink-0"></span>
+                            Blocked
+                        </button>
+                    </li>
+                    <li>
+                        <button (click)="statusChange.emit('approved')" class="gap-2 text-sm">
+                            <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+                            Approved
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

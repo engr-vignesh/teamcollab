@@ -1,12 +1,23 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { NavbarComponent } from './shared/components/navbar/navbar.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  imports: [CommonModule, NavbarComponent, RouterModule],
+  template: `
+    <div class="min-h-screen bg-base-100 text-base-content flex flex-col">
+      <app-navbar></app-navbar>
+      <main class="flex-1">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  `,
+  styles: [`
+    :host { display: block; }
+  `]
 })
 export class AppComponent {
   title = 'teamcollab';

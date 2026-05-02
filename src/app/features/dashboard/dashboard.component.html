@@ -1,0 +1,180 @@
+<div class="p-6 md:p-10 max-w-[1600px] mx-auto">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        <div>
+            <h1 class="text-4xl font-extrabold tracking-tight text-base-content">Project Board</h1>
+            <p class="text-base-content/60 mt-1">Manage and coordinate team tasks effectively.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="flex items-center bg-base-200 rounded-xl p-1 gap-0.5">
+                <button (click)="viewMode.set('kanban')"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer"
+                    [class.bg-base-100]="viewMode() === 'kanban'"
+                    [class.shadow]="viewMode() === 'kanban'"
+                    [class.text-primary]="viewMode() === 'kanban'"
+                    [class.text-base-content]="viewMode() !== 'kanban'"
+                    [class.opacity-50]="viewMode() !== 'kanban'">
+                    <i-lucide name="layout-dashboard" class="w-4 h-4"></i-lucide> Kanban
+                </button>
+                <button (click)="viewMode.set('list')"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer"
+                    [class.bg-base-100]="viewMode() === 'list'"
+                    [class.shadow]="viewMode() === 'list'"
+                    [class.text-primary]="viewMode() === 'list'"
+                    [class.text-base-content]="viewMode() !== 'list'"
+                    [class.opacity-50]="viewMode() !== 'list'">
+                    <i-lucide name="list" class="w-4 h-4"></i-lucide> List
+                </button>
+            </div>
+
+            <button (click)="addNewTask()"
+                class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-content text-sm font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all duration-150 cursor-pointer">
+                <i-lucide name="plus" class="w-4 h-4"></i-lucide>
+                New Task
+            </button>
+        </div>
+    </div>
+
+    <!-- Status summary stats -->
+    <div class="mb-10">
+        <p class="text-[11px] font-bold uppercase tracking-widest text-base-content/40 mb-4 px-1">Overview</p>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            @for (status of statuses; track status) {
+            <div class="relative bg-base-100 rounded-2xl border border-base-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
+                <div class="h-[3px] w-full absolute top-0 left-0" [ngClass]="getStatusBarClass(status)"></div>
+                <div class="p-4 pt-5">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                            [ngClass]="getStatusIconBgClass(status)">
+                            <i-lucide [name]="getStatusIcon(status)" class="w-4 h-4"></i-lucide>
+                        </div>
+                        <span class="text-3xl font-black tabular-nums leading-none">{{ getTasksByStatus(status).length }}</span>
+                    </div>
+                    <div class="text-[11px] font-bold uppercase tracking-widest text-base-content/50 mb-3">
+                        {{ status === 'wip' ? 'In Progress' : status }}
+                    </div>
+                    <div class="w-full bg-base-200 h-1.5 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-700" [ngClass]="getStatusBarClass(status)"
+                            [style.width.%]="taskService.tasks().length ? (getTasksByStatus(status).length / taskService.tasks().length) * 100 : 0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="bg-base-100 border border-base-200 rounded-2xl px-4 py-3 flex flex-wrap items-center gap-3 mb-8 shadow-sm">
+        <div class="relative flex-1 min-w-[180px]">
+            <i-lucide name="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/30"></i-lucide>
+            <input type="text" placeholder="Search tasks..."
+                class="w-full bg-base-200/50 rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:bg-base-200 transition-colors placeholder:text-base-content/30" />
+        </div>
+
+        <div class="h-5 w-px bg-base-300 hidden sm:block"></div>
+
+        <div class="flex items-center gap-2">
+            <button class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-base-200/60 hover:bg-base-200 transition-colors cursor-pointer text-base-content/70">
+                <i-lucide name="sliders-horizontal" class="w-4 h-4"></i-lucide> Filter
+            </button>
+            <button class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-base-200/60 hover:bg-base-200 transition-colors cursor-pointer text-base-content/70">
+                <i-lucide name="arrow-up-down" class="w-4 h-4"></i-lucide> Sort
+            </button>
+        </div>
+
+        <span class="ml-auto text-xs font-medium text-base-content/35 hidden sm:block">
+            {{ taskService.tasks().length }} tasks
+        </span>
+    </div>
+
+    <!-- Kanban View -->
+    @if (viewMode() === 'kanban') {
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 overflow-x-auto pb-6">
+        @for (status of statuses; track status) {
+        <div class="flex flex-col gap-4 min-w-[280px]">
+            <div class="flex items-center gap-2 px-2">
+                <span class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="getStatusBarClass(status)"></span>
+                <h2 class="font-bold text-sm uppercase tracking-widest opacity-70 flex-1">
+                    {{ status === 'wip' ? 'In Progress' : status }}
+                </h2>
+                <span class="badge badge-sm badge-ghost">{{ getTasksByStatus(status).length }}</span>
+            </div>
+
+            <div
+                class="flex flex-col gap-4 min-h-[500px] bg-base-200/30 rounded-2xl p-3 border border-dashed border-base-300">
+                @for (task of getTasksByStatus(status); track task.id) {
+                <app-task-card [task]="task" (statusChange)="taskService.updateTaskStatus(task.id, $event)"
+                    (delete)="taskService.deleteTask($event)">
+                </app-task-card>
+                }
+                @if (getTasksByStatus(status).length === 0) {
+                <div
+                    class="flex flex-col items-center justify-center h-40 opacity-20 border-2 border-dashed border-base-content/20 rounded-xl">
+                    <i-lucide name="layout" class="w-8 h-8 mb-2"></i-lucide>
+                    <span class="text-xs">No tasks</span>
+                </div>
+                }
+            </div>
+        </div>
+        }
+    </div>
+    } @else {
+    <!-- List View -->
+    <div class="bg-base-100 rounded-2xl border border-base-200 overflow-hidden shadow-sm">
+        <table class="table table-zebra w-full">
+            <thead>
+                <tr class="bg-base-200/50 text-xs uppercase tracking-wider">
+                    <th>Task</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Assignee</th>
+                    <th>Updated</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (task of taskService.tasks(); track task.id) {
+                <tr class="hover:bg-base-200/30 transition-colors">
+                    <td>
+                        <div class="font-bold text-sm">{{ task.title }}</div>
+                        <div class="text-xs opacity-50">{{ task.description | slice:0:50 }}…</div>
+                    </td>
+                    <td>
+                        <span [class]="getStatusBadgeClass(task.status)"
+                            class="badge badge-sm font-semibold uppercase text-[10px]">
+                            {{ task.status === 'wip' ? 'In Progress' : task.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <span [class]="getPriorityBadgeClass(task.priority)"
+                            class="badge badge-sm font-semibold uppercase text-[10px]">
+                            {{ task.priority }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <div class="avatar">
+                                <div class="w-6 rounded-full">
+                                    <img [src]="task.assignee.avatar" [alt]="task.assignee.name" />
+                                </div>
+                            </div>
+                            <span class="text-xs font-medium">{{ task.assignee.name }}</span>
+                        </div>
+                    </td>
+                    <td class="text-xs opacity-50">{{ task.updatedAt | date:'shortDate' }}</td>
+                    <td>
+                        <button (click)="taskService.deleteTask(task.id)"
+                            class="btn btn-ghost btn-xs btn-circle text-error">
+                            <i-lucide name="trash-2" class="w-3.5 h-3.5"></i-lucide>
+                        </button>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+</div>
