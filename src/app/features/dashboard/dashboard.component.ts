@@ -2,13 +2,14 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TaskService } from '../../core/services/task.service';
 import { TaskCardComponent } from '../../shared/components/task-card/task-card.component';
+import { TaskDialogComponent } from '../../shared/components/task-dialog/task-dialog.component';
 import { LucideAngularModule } from 'lucide-angular';
-import { Task, TaskStatus } from '../../core/models/task.model';
+import { Task, TaskStatus, TaskPriority } from '../../core/models/task.model';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TaskCardComponent, LucideAngularModule],
+  imports: [CommonModule, TaskCardComponent, TaskDialogComponent, LucideAngularModule],
   templateUrl: 'dashboard.component.html',
   styles: [`
     :host { display: block; }
@@ -18,6 +19,10 @@ import { Task, TaskStatus } from '../../core/models/task.model';
 export class DashboardComponent {
   taskService = inject(TaskService);
   viewMode = signal<'kanban' | 'list'>('kanban');
+
+  // Dialog state
+  isDialogOpen = signal(false);
+  editingTask = signal<Task | null>(null);
 
   statuses: TaskStatus[] = ['backlog', 'wip', 'completed', 'blocked', 'approved'];
 
@@ -74,13 +79,42 @@ export class DashboardComponent {
     }
   }
 
+  // --- Dialog handlers ---
+
   addNewTask() {
-    this.taskService.addTask({
-      title: 'New Task ' + (this.taskService.tasks().length + 1),
-      description: 'Click to edit task details.',
-      status: 'backlog',
-      priority: 'medium',
-      assignee: { name: 'John Doe', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John' }
-    });
+    this.editingTask.set(null);
+    this.isDialogOpen.set(true);
+  }
+
+  onEditTask(task: Task) {
+    this.editingTask.set(task);
+    this.isDialogOpen.set(true);
+  }
+
+  onDialogClose() {
+    this.isDialogOpen.set(false);
+    this.editingTask.set(null);
+  }
+
+  onDialogSave(data: { title: string; description: string; priority: TaskPriority }) {
+    const current = this.editingTask();
+    if (current) {
+      // Edit mode
+      this.taskService.updateTask(current.id, {
+        title: data.title,
+        description: data.description,
+        priority: data.priority
+      });
+    } else {
+      // Create mode
+      this.taskService.addTask({
+        title: data.title,
+        description: data.description,
+        status: 'backlog',
+        priority: data.priority,
+        assignee: { name: 'John Doe', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John' }
+      });
+    }
+    this.onDialogClose();
   }
 }

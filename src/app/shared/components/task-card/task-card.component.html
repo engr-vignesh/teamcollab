@@ -1,4 +1,5 @@
-<div class="card bg-base-100 shadow-sm border border-base-200 hover:shadow-md transition-all duration-200 group">
+<div class="card bg-base-100 shadow-sm border border-base-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
+    (click)="onCardClick()">
     <div class="card-body p-4 gap-3">
         <div class="flex justify-between items-start">
             <span [class]="getPriorityClass(task.priority)"
@@ -6,7 +7,12 @@
                 {{ task.priority }}
             </span>
             <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button (click)="delete.emit(task.id)" class="btn btn-ghost btn-xs btn-circle text-error">
+                <button (click)="$event.stopPropagation(); edit.emit(task)"
+                    class="btn btn-ghost btn-xs btn-circle text-base-content/50 hover:text-primary">
+                    <i-lucide name="pencil" class="w-3.5 h-3.5"></i-lucide>
+                </button>
+                <button (click)="$event.stopPropagation(); delete.emit(task.id)"
+                    class="btn btn-ghost btn-xs btn-circle text-error">
                     <i-lucide name="trash-2" class="w-3.5 h-3.5"></i-lucide>
                 </button>
             </div>
@@ -30,7 +36,7 @@
                 <span class="text-xs font-medium opacity-60">{{ task.assignee.name }}</span>
             </div>
 
-            <div class="dropdown dropdown-end dropdown-top">
+            <div class="dropdown dropdown-end dropdown-top" (click)="$event.stopPropagation()">
                 <div tabindex="0" role="button" [class]="getStatusClass(task.status)"
                     class="badge badge-sm font-semibold gap-1 cursor-pointer hover:opacity-80 transition-opacity">
                     {{ task.status === 'wip' ? 'In Progress' : task.status }}

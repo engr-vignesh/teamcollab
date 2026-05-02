@@ -14,6 +14,11 @@ export class TaskCardComponent {
   @Input({ required: true }) task!: Task;
   @Output() statusChange = new EventEmitter<TaskStatus>();
   @Output() delete = new EventEmitter<string>();
+  @Output() edit = new EventEmitter<Task>();
+
+  onCardClick() {
+    this.edit.emit(this.task);
+  }
 
   getPriorityClass(priority: string): string {
     switch (priority) {

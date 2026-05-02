@@ -29,7 +29,7 @@
                 </button>
             </div>
 
-            <button (click)="addNewTask()"
+            <button (click)="addNewTask()" id="new-task-btn"
                 class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-content text-sm font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all duration-150 cursor-pointer">
                 <i-lucide name="plus" class="w-4 h-4"></i-lucide>
                 New Task
@@ -106,8 +106,10 @@
             <div
                 class="flex flex-col gap-4 min-h-[500px] bg-base-200/30 rounded-2xl p-3 border border-dashed border-base-300">
                 @for (task of getTasksByStatus(status); track task.id) {
-                <app-task-card [task]="task" (statusChange)="taskService.updateTaskStatus(task.id, $event)"
-                    (delete)="taskService.deleteTask($event)">
+                <app-task-card [task]="task"
+                    (statusChange)="taskService.updateTaskStatus(task.id, $event)"
+                    (delete)="taskService.deleteTask($event)"
+                    (edit)="onEditTask($event)">
                 </app-task-card>
                 }
                 @if (getTasksByStatus(status).length === 0) {
@@ -137,7 +139,7 @@
             </thead>
             <tbody>
                 @for (task of taskService.tasks(); track task.id) {
-                <tr class="hover:bg-base-200/30 transition-colors">
+                <tr class="hover:bg-base-200/30 transition-colors cursor-pointer" (click)="onEditTask(task)">
                     <td>
                         <div class="font-bold text-sm">{{ task.title }}</div>
                         <div class="text-xs opacity-50">{{ task.description | slice:0:50 }}…</div>
@@ -166,7 +168,7 @@
                     </td>
                     <td class="text-xs opacity-50">{{ task.updatedAt | date:'shortDate' }}</td>
                     <td>
-                        <button (click)="taskService.deleteTask(task.id)"
+                        <button (click)="$event.stopPropagation(); taskService.deleteTask(task.id)"
                             class="btn btn-ghost btn-xs btn-circle text-error">
                             <i-lucide name="trash-2" class="w-3.5 h-3.5"></i-lucide>
                         </button>
@@ -178,3 +180,11 @@
     </div>
     }
 </div>
+
+<!-- Task Dialog (shared for create & edit) -->
+<app-task-dialog
+    [isOpen]="isDialogOpen()"
+    [task]="editingTask()"
+    (save)="onDialogSave($event)"
+    (closed)="onDialogClose()">
+</app-task-dialog>
